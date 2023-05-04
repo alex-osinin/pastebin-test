@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.11'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'io.freefair.lombok' version '8.0.1'
 }
 
 group = 'ru.aosinin'
@@ -13,8 +14,11 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "$spring_boot_version"
+	annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: "$spring_boot_version"
+
+	testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "$spring_boot_version"
 }
 
 tasks.named('test') {
