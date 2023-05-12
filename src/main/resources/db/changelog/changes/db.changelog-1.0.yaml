@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Alexei Osinin
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: paste_pkey
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: created_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: expiration_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  name: hash
+                  type: VARCHAR(8)
+              - column:
+                  name: lifetime
+                  type: VARCHAR(5)
+              - column:
+                  name: text
+                  type: text
+              - column:
+                  name: visibility
+                  type: VARCHAR(20)
+            tableName: paste
