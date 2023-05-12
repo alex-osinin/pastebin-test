@@ -4,18 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import ru.aosinin.pastebin.api.request.AddPasteRequest;
 import ru.aosinin.pastebin.api.responce.AddPasteResponse;
 import ru.aosinin.pastebin.api.responce.PasteResponse;
-import ru.aosinin.pastebin.exception.NotFoundEntityException;
-import ru.aosinin.pastebin.repository.PasteEntity;
-import ru.aosinin.pastebin.repository.PasteLifetime;
-import ru.aosinin.pastebin.repository.PasteRepositoryImpl;
+import ru.aosinin.pastebin.model.PasteEntity;
+import ru.aosinin.pastebin.model.PasteLifetime;
+import ru.aosinin.pastebin.model.PasteVisibility;
+import ru.aosinin.pastebin.repository.PasteRepository;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,42 +28,38 @@ public class PasteServiceImpl implements PasteService {
     private String host;
     private int publicListSize;
 
-    private final PasteRepositoryImpl repository;
+    private final PasteRepository repository;
 
     @Override
     public PasteResponse getByHash(String hash) {
-        PasteEntity pasteEntity;
-        try {
-            pasteEntity = repository.getByHash(hash);
-        } catch (NotFoundEntityException e) {
-            // FIXME: 04.05.2023 реализовать корректную обработку ошибки
-            return new PasteResponse("null");
-        }
-        return new PasteResponse(pasteEntity.getText());
+        Optional<PasteEntity> pasteEntity = repository.getByHash(hash);
+        // TODO: 12.05.2023 обработать ошибки (не найдена запись)
+        return pasteEntity.map(entity -> new PasteResponse(entity.getText())).orElseGet(() -> new PasteResponse("null"));
     }
 
     @Override
-    public List<PasteResponse> getLatestPublishedPastes() {
-        List<PasteEntity> list = repository.getLatestPublishedPublicPastes(publicListSize);
-        return list.stream().map(pasteEntity -> new PasteResponse(pasteEntity.getText())).collect(Collectors.toList());
+    public List<PasteResponse> getLatestPublicPostedPastes() {
+        Slice<PasteEntity> slice = repository.findByVisibilityAndExpirationTimeGreaterThanEqual(PasteVisibility.PUBLIC,
+                LocalDateTime.now(), PageRequest.of(0, publicListSize));
+        // TODO: 12.05.2023 проверить на сколько использование стрима для слайса корректно
+        return slice.stream().map(pasteEntity -> new PasteResponse(pasteEntity.getText())).toList();
     }
 
     @Override
     public AddPasteResponse create(AddPasteRequest request) {
         String hash = generateHash();
-        ZonedDateTime createdTime = ZonedDateTime.now();
+        LocalDateTime createdTime = LocalDateTime.now();
         PasteLifetime lifetime = request.getLifetime();
-        ZonedDateTime expirationTime = createdTime.plus(lifetime.getTemporalAmount());
+        LocalDateTime expirationTime = calculateExpirationTime(createdTime, lifetime);
 
-        PasteEntity paste = PasteEntity.builder()
-                .hash(hash)
-                .text(request.getText())
-                .lifetime(lifetime)
-                .createdTime(createdTime)
-                .expirationTime(expirationTime)
-                .visibility(request.getVisibility())
-                .build();
-        repository.add(paste);
+        PasteEntity paste = new PasteEntity();
+        paste.setHash(hash);
+        paste.setText(request.getText());
+        paste.setLifetime(lifetime);
+        paste.setCreatedTime(createdTime);
+        paste.setExpirationTime(expirationTime);
+        paste.setVisibility(request.getVisibility());
+        repository.save(paste);
 
         return new AddPasteResponse(host + "/" + paste.getHash());
     }
@@ -69,5 +67,12 @@ public class PasteServiceImpl implements PasteService {
     private String generateHash() {
         // TODO: 04.05.2023 дописать метод генерации случайного и уникального хеша
         return RandomStringUtils.random(8, true, true);
+    }
+
+    private LocalDateTime calculateExpirationTime(LocalDateTime createdTime, PasteLifetime lifetime) {
+        if (PasteLifetime.NEVER.equals(lifetime)) {
+            return null;
+        }
+        return createdTime.plus(lifetime.getTemporalAmount());
     }
 }

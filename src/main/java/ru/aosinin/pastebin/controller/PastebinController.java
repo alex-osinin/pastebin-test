@@ -15,8 +15,8 @@ public class PastebinController {
     private final PasteService pasteService;
 
     @GetMapping("/")
-    public Collection<PasteResponse> getPublicPasteList() {
-        return pasteService.getLatestPublishedPastes();
+    public Collection<PasteResponse> getLatestPublicPostedPastes() {
+        return pasteService.getLatestPublicPostedPastes();
     }
 
     @GetMapping("/{hash}")

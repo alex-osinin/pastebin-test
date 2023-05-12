@@ -1,15 +1,18 @@
 package ru.aosinin.pastebin.repository;
 
-import ru.aosinin.pastebin.exception.NotFoundEntityException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.JpaRepository;
+import ru.aosinin.pastebin.model.PasteEntity;
+import ru.aosinin.pastebin.model.PasteVisibility;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-public interface PasteRepository {
+public interface PasteRepository extends JpaRepository<PasteEntity, Long> {
 
-    PasteEntity getByHash(String hash) throws NotFoundEntityException;
+    Optional<PasteEntity> getByHash(String hash);
 
-    List<PasteEntity> getLatestPublishedPublicPastes(int amount);
-
-    void add(PasteEntity pasteEntity);
-
+    Slice<PasteEntity> findByVisibilityAndExpirationTimeGreaterThanEqual(PasteVisibility visibility,
+                                                                         LocalDateTime expirationTime, Pageable pageable);
 }

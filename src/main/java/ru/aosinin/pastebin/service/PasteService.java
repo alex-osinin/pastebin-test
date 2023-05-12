@@ -10,7 +10,7 @@ public interface PasteService {
 
     PasteResponse getByHash(String hash);
 
-    List<PasteResponse> getLatestPublishedPastes();
+    List<PasteResponse> getLatestPublicPostedPastes();
 
     AddPasteResponse create(AddPasteRequest request);
 
