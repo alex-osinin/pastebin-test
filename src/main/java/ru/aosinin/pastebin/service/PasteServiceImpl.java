@@ -25,7 +25,6 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "app")
 public class PasteServiceImpl implements PasteService {
 
-    private String host;
     private int publicListSize;
 
     private final PasteRepository repository;
@@ -61,7 +60,7 @@ public class PasteServiceImpl implements PasteService {
         paste.setVisibility(request.getVisibility());
         repository.save(paste);
 
-        return new AddPasteResponse(host + "/" + paste.getHash());
+        return new AddPasteResponse(paste.getHash());
     }
 
     private String generateHash() {

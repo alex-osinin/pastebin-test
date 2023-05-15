@@ -1,5 +1,4 @@
 app:
-  host: http://localhost:8080
   public_list_size: 10
 spring:
   datasource:

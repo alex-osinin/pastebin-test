@@ -2,6 +2,7 @@ package ru.aosinin.pastebin.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import ru.aosinin.pastebin.api.request.AddPasteRequest;
 import ru.aosinin.pastebin.api.responce.AddPasteResponse;
 import ru.aosinin.pastebin.api.responce.PasteResponse;
@@ -25,8 +26,9 @@ public class PastebinController {
     }
 
     @PostMapping("/")
-    public AddPasteResponse addPaste(@RequestBody AddPasteRequest request) {
-        return pasteService.create(request);
+    public ModelAndView addPaste(@RequestBody AddPasteRequest request) {
+        AddPasteResponse addPasteResponse = pasteService.create(request);
+        return new ModelAndView("redirect:/" + addPasteResponse.hash());
     }
 }
 
