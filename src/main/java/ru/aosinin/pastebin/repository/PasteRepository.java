@@ -15,4 +15,6 @@ public interface PasteRepository extends JpaRepository<PasteEntity, Long> {
 
     Slice<PasteEntity> findByVisibilityAndExpirationTimeGreaterThanEqual(PasteVisibility visibility,
                                                                          LocalDateTime expirationTime, Pageable pageable);
+
+    long removeByExpirationTimeLessThan(LocalDateTime currentTime);
 }

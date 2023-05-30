@@ -1,6 +1,7 @@
 package ru.aosinin.pastebin.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import ru.aosinin.pastebin.api.request.AddPasteRequest;
@@ -12,6 +13,7 @@ import java.util.Collection;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class PastebinController {
     private final PasteService pasteService;
 
